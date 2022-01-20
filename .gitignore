@@ -1,0 +1,10 @@
+# development folders
+_build/
+coverage/
+dist/
+out/
+node_modules/
+
+# local configuration
+.vscode/
+.vscode-test/
