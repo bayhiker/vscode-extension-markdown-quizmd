@@ -1,4 +1,5 @@
 # development folders
+.local-chromium
 _build/
 coverage/
 dist/

@@ -29,10 +29,150 @@
     "markdown.markdownItPlugins": true,
     "commands": [
       {
-        "command": "markdown-quizmd.about",
-        "title": "About QuizMD"
+        "command": "extension.markdown-quizmd.about",
+        "title": "QuizMD: About"
+      },
+      {
+        "command": "extension.markdown-quizmd.export2pdf",
+        "title": "QuizMD: Export as PDF"
       }
-    ]
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "when": "resourceLangId == markdown",
+          "command": "extension.markdown-quizmd.export2pdf"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "resourceLangId == markdown",
+          "command": "extension.markdown-quizmd.export2pdf",
+          "group": "markdown-quizmd@1"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "Markdown QuizMD",
+      "properties": {
+        "markdown-quizmd.executablePath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to a Chromium or Chrome executable to run instead of the bundled Chromium."
+        },
+        "markdown-quizmd.exportDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "Directory for exported html or pdf files."
+        },
+        "markdown-quizmd.statusBarMessageTimeout": {
+          "type": "number",
+          "default": 10000,
+          "description": "Statusbar message timeout [milliseconds]"
+        },
+        "markdown-quizmd.pdfScale": {
+          "type": "number",
+          "default": 1,
+          "description": "Scale of the page rendering in exported PDF."
+        },
+        "markdown-quizmd.pdfDisplayHeaderFooter": {
+          "type": "boolean",
+          "default": true,
+          "description": "Display header and footer in exported PDF.",
+          "scope": "resource"
+        },
+        "markdown-quizmd.pdfHeaderTemplate": {
+          "type": "string",
+          "default": "<div style=\"font-size: 9px; margin-left: 1cm;\"> <span class='title'></span></div>",
+          "description": "HTML template for the print header in exported PDF.",
+          "scope": "resource"
+        },
+        "markdown-quizmd.pdfFooterTemplate": {
+          "type": "string",
+          "default": "<div style=\"font-size: 9px; margin: 0 auto;\"> <span class='pageNumber'></span> / <span class='totalPages'></span>  <span>https://youquiz.me/</span></div>",
+          "description": "HTML template for the print footer in exported PDF.",
+          "scope": "resource"
+        },
+        "markdown-quizmd.pdfPrintBackground": {
+          "type": "boolean",
+          "default": true,
+          "description": "Print background graphics in exported PDF.",
+          "scope": "resource"
+        },
+        "markdown-quizmd.pdfOrientation": {
+          "type": "string",
+          "enum": [
+            "portrait",
+            "landscape"
+          ],
+          "default": "portrait",
+          "description": "Paper orientation in exported PDF. portrait or landscape.",
+          "scope": "resource"
+        },
+        "markdown-quizmd.pdfPageRanges": {
+          "type": "string",
+          "default": "",
+          "description": "Paper ranges to print and exported to PDF, e.g., '1-5, 8, 11-13'.",
+          "scope": "resource"
+        },
+        "markdown-quizmd.pdfFormat": {
+          "type": "string",
+          "enum": [
+            "Letter",
+            "Legal",
+            "Tabloid",
+            "Ledger",
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5",
+            "A6"
+          ],
+          "default": "A4",
+          "description": "Exported PDF paper format [Letter, Legal, Tabloid, Ledger, A0, A1, A2, A3, A4, A5, A6].",
+          "scope": "resource"
+        },
+        "markdown-quizmd.pdfWidth": {
+          "type": "string",
+          "default": "",
+          "description": "Paper width in exported PDF, accepts values labeled with units(mm, cm, in, px). If it is set, it overrides the markdown-quizmd.pdfFormat option.",
+          "scope": "resource"
+        },
+        "markdown-quizmd.pdfHeight": {
+          "type": "string",
+          "default": "",
+          "description": "Paper height in exported PDF, accepts values labeled with units(mm, cm, in, px). If it is set, it overrides the markdown-quizmd.pdfFormat option.",
+          "scope": "resource"
+        },
+        "markdown-quizmd.pdfMargin.top": {
+          "type": "string",
+          "default": "1.5cm",
+          "description": "Page Option in exported PDF. Border Top. units: mm, cm, in, px",
+          "scope": "resource"
+        },
+        "markdown-quizmd.pdfMargin.bottom": {
+          "type": "string",
+          "default": "1cm",
+          "description": "Page Option in exported PDF. Border bottom. units: mm, cm, in, px",
+          "scope": "resource"
+        },
+        "markdown-quizmd.pdfMargin.right": {
+          "type": "string",
+          "default": "1cm",
+          "description": "Page Option in exported PDF. Border right. units: mm, cm, in, px",
+          "scope": "resource"
+        },
+        "markdown-quizmd.pdfMargin.left": {
+          "type": "string",
+          "default": "1cm",
+          "description": "Page Option in exported PDF. Border left. units: mm, cm, in, px",
+          "scope": "resource"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
@@ -46,9 +186,10 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.16.7",
     "@types/glob": "^7.1.4",
     "@types/markdown-it-container": "^2.0.4",
-    "@types/mocha": "^9.0.0",
+    "@types/mocha": "^9.1.0",
     "@types/node": "14.x",
     "@types/vscode": "^1.63.0",
     "@typescript-eslint/eslint-plugin": "^5.1.0",
@@ -56,13 +197,15 @@
     "@vscode/test-electron": "^1.6.2",
     "eslint": "^8.1.0",
     "glob": "^7.1.7",
-    "mocha": "^9.1.3",
+    "markdown-it": "^12.3.2",
+    "mocha": "^9.2.0",
     "ts-loader": "^9.2.5",
     "typescript": "^4.4.4",
     "webpack": "^5.52.1",
     "webpack-cli": "^4.8.0"
   },
   "dependencies": {
-    "markdown-it-quizmd": "file:../markdown-it-quizmd"
+    "markdown-it-quizmd": "file:../markdown-it-quizmd",
+    "puppeteer-core": "^13.1.3"
   }
 }
