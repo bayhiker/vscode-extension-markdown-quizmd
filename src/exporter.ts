@@ -55,8 +55,6 @@ export default class Exporter {
       showErrorMessage(`No chromium installation found`);
       return;
     }
-    const md = getDecoratedMd();
-    const html = md.render(editor?.document.getText());
     const documentPath = editor?.document.fileName;
     console.log(`Converting ${documentPath} to ${exportType}`);
     const documentBasename = path.basename(documentPath, ".md");
@@ -72,6 +70,7 @@ export default class Exporter {
         );
     // Write html to a temp file
     const fs = require("fs");
+    const html = Exporter.md2html(getDecoratedMd(), editor?.document.getText());
     fs.writeFileSync(tempHtmlPath, html, (error: Error) => {
       if (error) {
         showErrorMessage(
@@ -85,7 +84,7 @@ export default class Exporter {
     return vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `[Markdown QuizMD]: Exporting ${exportType})...`,
+        title: `Exporting ${exportType}...`,
       },
       async () => {
         try {
@@ -118,17 +117,39 @@ export default class Exporter {
           };
           await page.pdf(pdfOptions);
           await browser.close();
+
+          showInfoMessage(`Exported pdf: ${exportedFilename}`);
+        } catch (error: any) {
+          showErrorMessage(`Failed to export PDF: ${error.toString()}`);
+        } finally {
           // delete temporary file
           if (fileExists(tempHtmlPath)) {
             fs.unlinkSync(tempHtmlPath);
           }
-
-          showInfoMessage("$(markdown) Exported pdf: " + exportedFilename);
-        } catch (error: any) {
-          showErrorMessage(`Failed to export PDF: ${error.toString()}`);
         }
       } // async
     ); // vscode.window.withProgress
+  }
+
+  static md2html(md: any, text: string) {
+    return `
+<!-- KaTeX requires the use of the HTML5 doctype. Without it, KaTeX may not render properly -->
+<html>
+  <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
+
+    <!-- The loading of KaTeX is deferred to speed up page rendering -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js" integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY" crossorigin="anonymous"></script>
+
+    <!-- To automatically render math in text elements, include the auto-render extension: -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);"></script>
+  </head>
+  <body>
+  ${md.render(text)}
+  </body>
+</html>
+    `;
   }
 
   static getChromiumPath(): string {

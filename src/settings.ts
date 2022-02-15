@@ -27,6 +27,10 @@ export function getExportDirectory() {
   return exportDirectory;
 }
 
+export function convertOnSave(): boolean {
+  return getSetting("convertOnSave");
+}
+
 export function getPdfScale(): number {
   return getSetting("pdfScale") || 1;
 }

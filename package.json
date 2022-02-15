@@ -66,6 +66,16 @@
           "default": "",
           "description": "Directory for exported html or pdf files."
         },
+        "markdown-quizmd.convertOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Auto convert on save. To apply the settings, you need to restart Visual Studio Code"
+        },
+        "markdown-quizmd.useDefaultVariableValue": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use default values for any QuizMD variables used. Useful if you want to create a similar problem to practice with"
+        },
         "markdown-quizmd.statusBarMessageTimeout": {
           "type": "number",
           "default": 10000,
@@ -205,6 +215,7 @@
     "webpack-cli": "^4.8.0"
   },
   "dependencies": {
+    "@iktakahiro/markdown-it-katex": "^4.0.1",
     "markdown-it-quizmd": "file:../markdown-it-quizmd",
     "puppeteer-core": "^13.1.3"
   }

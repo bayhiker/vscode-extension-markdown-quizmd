@@ -1,3 +1,4 @@
+import { errorMonitor } from "events";
 import * as vscode from "vscode";
 import { getStatusBarMessageTimeout } from "./settings";
 
@@ -19,13 +20,12 @@ export function dirExists(path: string): boolean {
 }
 
 export function showInfoMessage(info: string): void {
-  const infoMessage = `[INFO] ${info}`;
-  vscode.window.showInformationMessage(infoMessage);
-  console.log(infoMessage);
+  vscode.window.showInformationMessage(info);
+  console.log(info);
 }
 
 export function showErrorMessage(error: string | Error): void {
-  const errorMessage = `[ERROR] ${error}`;
+  const errorMessage = error instanceof Error ? error.message : error;
   vscode.window.showErrorMessage(errorMessage);
   console.error(errorMessage);
 }
@@ -50,7 +50,9 @@ export function getDecoratedMd(md: any = undefined): any {
   if (!md) {
     md = require("markdown-it")({ html: true });
   }
-  return md.use(require("markdown-it-quizmd"));
+  return md
+    .use(require("markdown-it-quizmd"))
+    .use(require("@iktakahiro/markdown-it-katex"));
 }
 
 export function getRandomDigits(max: number = 1000000) {

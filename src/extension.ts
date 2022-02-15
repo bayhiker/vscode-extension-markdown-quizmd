@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import Exporter from "./exporter";
+import { convertOnSave } from "./settings";
 import { getDecoratedMd, showErrorMessage, showInfoMessage } from "./util";
 
 // this method is called when your extension is activated
@@ -33,6 +34,18 @@ export function activate(context: vscode.ExtensionContext) {
   ];
   commands.forEach((command) => {
     context.subscriptions.push(command);
+  });
+  // Handle event subscriptions such as convertOnSave
+  const subscriptions = [];
+  if (convertOnSave()) {
+    subscriptions.push(
+      vscode.workspace.onDidSaveTextDocument(async () => {
+        await exporter.exportQuiz("pdf");
+      })
+    );
+  }
+  subscriptions.forEach((subscription) => {
+    context.subscriptions.push(subscription);
   });
 
   return {
