@@ -32,7 +32,7 @@ export default class Exporter {
 
   constructor() {}
 
-  async exportQuiz(exportType: string = "pdf") {
+  async exportQuiz(exportType: string = "pdf", isSolution: boolean = false) {
     if (exportType !== "pdf") {
       showErrorMessage(`Only pdf export is supported`);
       return;
@@ -63,14 +63,23 @@ export default class Exporter {
       `quizmd-tmp-${getRandomDigits()}.html`
     );
     const exportedFilename = documentPath
-      ? documentPath.replace(/md$/, exportType)
+      ? documentPath.replace(
+          /md$/,
+          `${isSolution ? "solution." : ""}${exportType}`
+        )
       : path.join(
           getExportDirectory(),
-          `${documentBasename}-${getRandomDigits()}.${exportType}`
+          `${documentBasename}${
+            isSolution ? "-solutions" : ""
+          }-${getRandomDigits()}.${exportType}`
         );
     // Write html to a temp file
     const fs = require("fs");
-    const html = Exporter.md2html(getDecoratedMd(), editor?.document.getText());
+    const html = Exporter.md2html(
+      getDecoratedMd(),
+      editor?.document.getText(),
+      isSolution
+    );
     fs.writeFileSync(tempHtmlPath, html, (error: Error) => {
       if (error) {
         showErrorMessage(
@@ -131,9 +140,17 @@ export default class Exporter {
     ); // vscode.window.withProgress
   }
 
-  static md2html(md: any, text: string) {
+  static md2html(md: any, text: string, isSolution: boolean = false) {
+    const solutionCss = `
+<style>
+.quizmd-multiple-choice-solution {
+  color: red;
+  font-weight: bold;
+}
+</style>
+
+    `;
     return `
-<!-- KaTeX requires the use of the HTML5 doctype. Without it, KaTeX may not render properly -->
 <html>
   <head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css" integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ" crossorigin="anonymous">
@@ -144,6 +161,7 @@ export default class Exporter {
     <!-- To automatically render math in text elements, include the auto-render extension: -->
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
         onload="renderMathInElement(document.body);"></script>
+    ${isSolution ? solutionCss : ""}
   </head>
   <body>
   ${md.render(text)}

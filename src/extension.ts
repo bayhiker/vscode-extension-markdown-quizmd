@@ -29,6 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
       "extension.markdown-quizmd.export2pdf",
       async function () {
         await exporter.exportQuiz("pdf");
+        await exporter.exportQuiz("pdf", true);
       }
     ),
   ];
@@ -41,6 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
     subscriptions.push(
       vscode.workspace.onDidSaveTextDocument(async () => {
         await exporter.exportQuiz("pdf");
+        await exporter.exportQuiz("pdf", true);
       })
     );
   }
