@@ -1,6 +1,5 @@
 import {
   fileExists,
-  dirExists,
   showErrorMessage,
   setProxy,
   showInfoMessage,
@@ -29,8 +28,13 @@ export default class Exporter {
   // handle to vscode
   vscode: any;
   static chromiumFound = false;
+  problemsParser: any = null;
+  solutionsParser: any = null;
 
-  constructor() {}
+  constructor() {
+    this.problemsParser = getDecoratedMd(null, false);
+    this.solutionsParser = getDecoratedMd(null, true);
+  }
 
   async exportQuiz(exportType: string = "pdf", isSolution: boolean = false) {
     if (exportType !== "pdf") {
@@ -76,9 +80,8 @@ export default class Exporter {
     // Write html to a temp file
     const fs = require("fs");
     const html = Exporter.md2html(
-      getDecoratedMd(),
-      editor?.document.getText(),
-      isSolution
+      isSolution ? this.solutionsParser : this.problemsParser,
+      editor?.document.getText()
     );
     fs.writeFileSync(tempHtmlPath, html, (error: Error) => {
       if (error) {
@@ -140,16 +143,7 @@ export default class Exporter {
     ); // vscode.window.withProgress
   }
 
-  static md2html(md: any, text: string, isSolution: boolean = false) {
-    const solutionCss = `
-<style>
-.quizmd-multiple-choice-solution {
-  color: red;
-  font-weight: bold;
-}
-</style>
-
-    `;
+  static md2html(md: any, text: string) {
     return `
 <html>
   <head>
@@ -161,7 +155,6 @@ export default class Exporter {
     <!-- To automatically render math in text elements, include the auto-render extension: -->
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
         onload="renderMathInElement(document.body);"></script>
-    ${isSolution ? solutionCss : ""}
   </head>
   <body>
   ${md.render(text)}

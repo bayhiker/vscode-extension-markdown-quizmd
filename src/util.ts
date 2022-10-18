@@ -1,4 +1,3 @@
-import { errorMonitor } from "events";
 import * as vscode from "vscode";
 import { getStatusBarMessageTimeout } from "./settings";
 
@@ -45,13 +44,16 @@ export function setStatusBarMessage(
   return vscode.window.setStatusBarMessage(statusBarMessage, 10000);
 }
 
-export function getDecoratedMd(md: any = undefined): any {
+export function getDecoratedMd(
+  md: any = undefined,
+  isSolution: boolean = false
+): any {
   // Use all vs code markdown-it plugins here
   if (!md) {
     md = require("markdown-it")({ html: true });
   }
   return md
-    .use(require("markdown-it-quizmd"))
+    .use(require("markdown-it-quizmd"), { parserOptions: { isSolution } })
     .use(require("@iktakahiro/markdown-it-katex"));
 }
 
